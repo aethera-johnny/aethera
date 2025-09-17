@@ -7,22 +7,5 @@
 
 Welcome to your new app.
 
-<button class="btn btn-primary" @onclick="GetHelloString">Get Hello String</button>
-
-<p>@helloString</p>
-
 @code {
-    private string helloString = "";
-    
-    private async Task GetHelloString()
-    {
-        try
-        {            
-            helloString = await Http.GetStringAsync("/api/hello"); 
-        }
-        catch (Exception ex)
-        {
-            helloString = $"Error: {ex.Message}";
-        }
-    }
 }
