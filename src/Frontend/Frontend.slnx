@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../../test/unit/Frontend.Tests/Frontend.Tests.csproj" />
+  <Project Path="Frontend.csproj" />
+</Solution>
