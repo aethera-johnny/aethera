@@ -34,31 +34,13 @@ services:
           cpus: '0.25'
           memory: 256M
 
-  helloservice:
-    image: ${DOCKER_REGISTRY-}helloservice
-    build:
-      context: .
-      dockerfile: src/HelloService/Dockerfile
-    ports:
-      - "7001:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-
   authservice:
       image: ${DOCKER_REGISTRY-}authservice
       build:
           context: .
           dockerfile: src/AuthService/Dockerfile
       ports:
-        - "7002:8080"
+        - "7001:8080"
       environment:
         - ASPNETCORE_ENVIRONMENT=Development
       deploy:
