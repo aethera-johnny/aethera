@@ -24,12 +24,14 @@ namespace AuthService.Migrations
                     user_name = table.Column<string>(type: "character varying(15)", maxLength: 15, nullable: false),
                     user_phone = table.Column<string>(type: "character varying(11)", maxLength: 11, nullable: true),
                     user_email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    created_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    refresh_token = table.Column<string>(type: "text", nullable: true),
+                    refresh_token_expiry_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     updated_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_tb_user_info", x => x.user_id);
+                    table.PrimaryKey("PK_tb_user_info", x => x.user_id);
                 });
         }
 

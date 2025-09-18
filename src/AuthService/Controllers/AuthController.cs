@@ -3,7 +3,6 @@ using AuthService.Models;
 using AuthService.Entities;
 using AuthService.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace AuthService.Controllers
 {
@@ -12,14 +11,34 @@ namespace AuthService.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ITokenService _tokenService;
 
-        public AuthController(IUserService userService)
+        public AuthController(IUserService userService, ITokenService tokenService)
         {
             _userService = userService;
+            _tokenService = tokenService;
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<AuthResponse>> Login([FromBody] UserLogin userLogin)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var authResponse = await _userService.AuthenticateAsync(userLogin.UserAccount, userLogin.UserPassword);
+
+            if (authResponse == null)
+            {
+                return Unauthorized(new { message = "Invalid credentials" });
+            }
+
+            return Ok(authResponse);
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> SignUp([FromBody] UserSignUp signUp)
+        public async Task<ActionResult<AuthResponse>> SignUp([FromBody] UserSignUp signUp)
         {
             if (!ModelState.IsValid)
             {
@@ -35,24 +54,45 @@ namespace AuthService.Controllers
                 UserPhone = signUp.UserPhone
             };
 
-            var result = await _userService.AddUserAsync(newUser);
+            var authResponse = await _userService.AddUserAsync(newUser);
 
-            if (result.IsFailure)
+            if (authResponse == null)
             {
-                return Conflict(new { message = result.Error });
+                return Conflict(new { message = "User registration failed, possibly duplicate account." });
             }
 
-            var userResponse = new UserResponse
-            {
-                UserId = result.Value.User_Id,
-                UserAccount = result.Value.UserAccount,
-                UserName = result.Value.UserName,
-                UserEmail = result.Value.UserEmail,
-                UserPhone = result.Value.UserPhone,
-                CreatedDatetime = result.Value.CreatedDatetime
-            };
+            return CreatedAtAction(nameof(SignUp), new { id = authResponse.UserId }, authResponse);
+        }
 
-            return CreatedAtAction(nameof(SignUp), new { id = userResponse.UserId }, userResponse);
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<AuthResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userService.GetUserByRefreshTokenAsync(request.RefreshToken);
+
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Invalid or expired refresh token" });
+            }
+
+            var newAccessToken = _tokenService.GenerateJwtToken(user);
+            var newRefreshToken = _tokenService.GenerateRefreshToken();
+            await _tokenService.SaveRefreshTokenAsync(user.User_Id, newRefreshToken);
+
+            return Ok(new AuthResponse
+            {
+                UserId = user.User_Id,
+                UserAccount = user.UserAccount,
+                UserName = user.UserName,
+                UserEmail = user.UserEmail,
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                RefreshTokenExpiryTime = user.RefreshTokenExpiryTime
+            });
         }
     }
 }
