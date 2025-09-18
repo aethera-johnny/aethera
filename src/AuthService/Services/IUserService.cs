@@ -1,11 +1,12 @@
-using AuthService.Common;
 using AuthService.Entities;
-using System.Threading.Tasks;
+using AuthService.Models;
 
 namespace AuthService.Services
 {
     public interface IUserService
     {
-        Task<Result<Tb_User_Info>> AddUserAsync(Tb_User_Info newUser);
+        Task<AuthResponse> AddUserAsync(Tb_User_Info newUser);
+        Task<AuthResponse> AuthenticateAsync(string userAccount, string userPassword);
+        Task<Tb_User_Info> GetUserByRefreshTokenAsync(string refreshToken);
     }
 }

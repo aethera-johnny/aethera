@@ -37,10 +37,16 @@ namespace AuthService.Entities
         [Column("user_email", Order = 7)]
         public string UserEmail { get; set; }
 
-        [Column("created_datetime", Order = 8)]
+        [Column("refresh_token", Order = 8)]
+        public string RefreshToken { get; set; }
+
+        [Column("refresh_token_expiry_time", Order = 9)]
+        public DateTime RefreshTokenExpiryTime { get; set; }
+
+        [Column("created_datetime", Order = 10)]
         public DateTime CreatedDatetime { get; set; }
 
-        [Column("updated_datetime", Order = 9)]
+        [Column("updated_datetime", Order = 11)]
         public DateTime UpdatedDatetime { get; set; }
     }
 }

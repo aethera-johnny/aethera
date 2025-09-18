@@ -33,11 +33,9 @@ namespace AuthService.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("User_Id"));
 
                     b.Property<DateTime>("CreatedDatetime")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_datetime")
-                        .HasColumnOrder(8)
-                        .HasDefaultValueSql("now()");
+                        .HasColumnOrder(10);
 
                     b.Property<byte[]>("PasswordSalt")
                         .IsRequired()
@@ -45,11 +43,20 @@ namespace AuthService.Migrations
                         .HasColumnName("password_salt")
                         .HasColumnOrder(4);
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text")
+                        .HasColumnName("refresh_token")
+                        .HasColumnOrder(8);
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("refresh_token_expiry_time")
+                        .HasColumnOrder(9);
+
                     b.Property<DateTime>("UpdatedDatetime")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_datetime")
-                        .HasColumnOrder(9);
+                        .HasColumnOrder(11);
 
                     b.Property<string>("UserAccount")
                         .IsRequired()
@@ -84,10 +91,9 @@ namespace AuthService.Migrations
                         .HasColumnName("user_phone")
                         .HasColumnOrder(6);
 
-                    b.HasKey("User_Id")
-                        .HasName("pk_tb_user_info");
+                    b.HasKey("User_Id");
 
-                    b.ToTable("tb_user_info", (string)null);
+                    b.ToTable("tb_user_info");
                 });
 #pragma warning restore 612, 618
         }

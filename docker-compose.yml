@@ -44,6 +44,7 @@ services:
       environment:
         - ASPNETCORE_ENVIRONMENT=Development
         - ConnectionStrings__DefaultConnection=Host=auth-db;Port=5432;Database=aethera_auth;Username=aethera;Password=a123123a
+        - Jwt__Key=aB1c2D3e4F5g6H7i8J9k0L1m2N3o4P5q6R7s8T9u0V1w2X3y4Z5a6B7c8D9e0F
       depends_on:
         - auth-db
       deploy:
