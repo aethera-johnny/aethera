@@ -43,6 +43,9 @@ services:
         - "7001:8080"
       environment:
         - ASPNETCORE_ENVIRONMENT=Development
+        - ConnectionStrings__DefaultConnection=Host=auth-db;Port=5432;Database=aethera_auth;Username=aethera;Password=a123123a
+      depends_on:
+        - auth-db
       deploy:
         resources:
           limits:
@@ -52,3 +55,25 @@ services:
             cpus: '0.25'
             memory: 256M
 
+  auth-db:
+    image: postgres:15
+    container_name: aethera-auth-db
+    environment:
+      POSTGRES_DB: aethera_auth
+      POSTGRES_USER: aethera
+      POSTGRES_PASSWORD: a123123a
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    deploy:
+        resources:
+          limits:
+            cpus: '0.5'
+            memory: 512M
+          reservations:
+            cpus: '0.25'
+            memory: 256M
+
+volumes:
+  auth-db-data:
