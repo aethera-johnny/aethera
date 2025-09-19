@@ -1,0 +1,36 @@
+.header-container {
+    display: flex;
+    background-color: #1a1a1a;
+    height: 70px;
+    padding: 0 25px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+}
+
+.header-container > div:first-child {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--aethera-accent-color);
+}
+
+.header-container nav {
+    display: flex;
+    gap: 15px;
+}
+
+.nav-button {
+    text-decoration: none;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: 1px solid var(--aethera-accent-color);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.nav-button:hover {
+    background-color: var(--aethera-accent-color);
+    color: #1a1a1a;
+}
