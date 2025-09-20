@@ -13,6 +13,7 @@ RUN dotnet publish "Frontend.csproj" -c Release -o /app/publish
 
 # Stage 2: Serve the app using Nginx
 FROM nginx:alpine AS final
+ENV LANG C.UTF-8
 WORKDIR /usr/share/nginx/html
 
 # Copy the built app from the build stage
