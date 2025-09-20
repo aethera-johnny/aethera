@@ -1,0 +1,158 @@
+@page "/signup"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@layout ContactLayout
+@using Frontend.Models
+@using System.Text.RegularExpressions
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http.Headers
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+
+<article class="dark-theme-container">
+    <div class="content-header">
+        <h1 class="title">회원가입</h1>
+        <p class="desc">가입 정보를 입력해주세요.</p>
+    </div>
+
+    <fieldset disabled="@_isLoading">
+        <EditForm Model="@userSignUp" OnValidSubmit="HandleValidSubmit" autocomplete="off">
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    @_errorMessage
+                </div>
+            }
+            <div class="signup-form">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <InputText id="userAccount" class="form-control" @bind-Value="userSignUp.UserAccount" placeholder="계정" />
+                    <ValidationMessage For="@(() => userSignUp.UserAccount)" />
+                </div>
+                <div class="form-group">
+                    <InputText id="userPassword" type="password" class="form-control" @bind-Value="userSignUp.UserPassword" placeholder="비밀번호" />
+                    <ValidationMessage For="@(() => userSignUp.UserPassword)" />
+                </div>
+                <div class="form-group">
+                    <InputText id="userName" class="form-control" @bind-Value="userSignUp.UserName" placeholder="이름" />
+                    <ValidationMessage For="@(() => userSignUp.UserName)" />
+                </div>
+                <div class="form-group">
+                    <InputText id="userEmail" class="form-control" @bind-Value="userSignUp.UserEmail" placeholder="이메일" />
+                    <ValidationMessage For="@(() => userSignUp.UserEmail)" />
+                </div>
+                <div class="form-group">
+                    <input id="userPhone" class="form-control" @bind="FormattedPhoneNumber" @bind:event="oninput" placeholder="휴대폰 번호" />
+                    <ValidationMessage For="@(() => userSignUp.UserPhone)" />
+                </div>
+                @if (_isLoading)
+                {
+                    <div class="loader"></div>
+                }
+                <button type="submit" class="btn btn-primary">
+                    @if (_isLoading) { <span>잠시만 기다려주세요.</span> } else { <span>가입하기</span> }
+                </button>
+            </div>
+        </EditForm>
+    </fieldset>
+</article>
+
+@code {
+    private UserSignUp userSignUp = new UserSignUp
+    {
+        UserAccount = "",
+        UserPassword = "",
+        UserName = "",
+        UserEmail = "",
+        UserPhone = ""
+    };
+
+    [CascadingParameter]
+    private EditContext? EditContext { get; set; }
+
+    private string _formattedPhoneNumber = "";
+    public string FormattedPhoneNumber
+    {
+        get => _formattedPhoneNumber;
+        set
+        {
+            var phoneNumber = value ?? string.Empty;
+            var digitsOnly = Regex.Replace(phoneNumber, @"\D", "");
+
+            if (digitsOnly.Length > 11)
+            {
+                digitsOnly = digitsOnly.Substring(0, 11);
+            }
+
+            userSignUp.UserPhone = digitsOnly;
+            EditContext?.NotifyFieldChanged(FieldIdentifier.Create(() => userSignUp.UserPhone));
+
+            _formattedPhoneNumber = FormatPhoneNumber(digitsOnly);
+        }
+    }
+
+    private string FormatPhoneNumber(string digits)
+    {
+        if (string.IsNullOrEmpty(digits)) return string.Empty;
+
+        if (digits.Length > 7)
+        {
+            return $"{digits.Substring(0, 3)}-{digits.Substring(3, 4)}-{digits.Substring(7)}";
+        }
+        if (digits.Length > 3)
+        {
+            return $"{digits.Substring(0, 3)}-{digits.Substring(3)}";
+        }
+
+        return digits;
+    }
+
+    private bool _isLoading = false;
+    private string? _errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/signup", userSignUp);
+
+            if (response.IsSuccessStatusCode)
+            {
+                SignupResponse? resData = await response.Content.ReadFromJsonAsync<SignupResponse>();
+                if (resData != null)
+                {
+                    Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", resData.AccessToken);
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "accessToken", resData.AccessToken);
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "refreshToken", resData.RefreshToken);
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userAccount", resData.UserAccount);
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userName", resData.UserName);
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userEmail", resData.UserEmail);
+                    Navigation.NavigateTo("/");
+                }
+            }
+            else
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    _errorMessage = !string.IsNullOrEmpty(errorResponse) ? errorResponse : "계정 등록에 실패했습니다.";
+                }
+                else
+                {
+                    _errorMessage = "오류가 발생했습니다. 다시 시도해주세요.";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            _errorMessage = "장애가 발생했습니다.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

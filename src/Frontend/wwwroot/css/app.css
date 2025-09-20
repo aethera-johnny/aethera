@@ -19,7 +19,7 @@ body {
 }
 
 .validation-message {
-    color: red;
+    color: indianred;
 }
 
 #blazor-error-ui {
