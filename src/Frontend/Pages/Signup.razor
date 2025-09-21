@@ -9,53 +9,63 @@
 @inject HttpClient Http
 @inject IJSRuntime JSRuntime
 
-<article class="dark-theme-container">
-    <div class="content-header">
-        <h1 class="title">회원가입</h1>
-        <p class="desc">가입 정보를 입력해주세요.</p>
-    </div>
+<div class="content">
+    <article class="dark-theme-container">
+        <div class="content-header">
+            <h1 class="title">회원가입</h1>
+            <p class="desc">가입 정보를 입력해주세요.</p>
+        </div>
 
-    <fieldset disabled="@_isLoading">
-        <EditForm Model="@userSignUp" OnValidSubmit="HandleValidSubmit" autocomplete="off">
-            @if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="alert alert-danger" role="alert">
-                    @_errorMessage
-                </div>
-            }
-            <div class="signup-form">
-                <DataAnnotationsValidator />
-                <div class="form-group">
-                    <InputText id="userAccount" class="form-control" @bind-Value="userSignUp.UserAccount" placeholder="계정" />
-                    <ValidationMessage For="@(() => userSignUp.UserAccount)" />
-                </div>
-                <div class="form-group">
-                    <InputText id="userPassword" type="password" class="form-control" @bind-Value="userSignUp.UserPassword" placeholder="비밀번호" />
-                    <ValidationMessage For="@(() => userSignUp.UserPassword)" />
-                </div>
-                <div class="form-group">
-                    <InputText id="userName" class="form-control" @bind-Value="userSignUp.UserName" placeholder="이름" />
-                    <ValidationMessage For="@(() => userSignUp.UserName)" />
-                </div>
-                <div class="form-group">
-                    <InputText id="userEmail" class="form-control" @bind-Value="userSignUp.UserEmail" placeholder="이메일" />
-                    <ValidationMessage For="@(() => userSignUp.UserEmail)" />
-                </div>
-                <div class="form-group">
-                    <input id="userPhone" class="form-control" @bind="FormattedPhoneNumber" @bind:event="oninput" placeholder="휴대폰 번호" />
-                    <ValidationMessage For="@(() => userSignUp.UserPhone)" />
-                </div>
-                @if (_isLoading)
+        <fieldset disabled="@_isLoading">
+            <EditForm Model="@userSignUp" OnValidSubmit="HandleValidSubmit" autocomplete="off">
+                @if (!string.IsNullOrEmpty(_errorMessage))
                 {
-                    <div class="loader"></div>
+                    <div class="alert alert-danger" role="alert">
+                        @_errorMessage
+                    </div>
                 }
-                <button type="submit" class="btn btn-primary">
-                    @if (_isLoading) { <span>잠시만 기다려주세요.</span> } else { <span>가입하기</span> }
-                </button>
-            </div>
-        </EditForm>
-    </fieldset>
-</article>
+                <div class="signup-form">
+                    <DataAnnotationsValidator />
+                    <div class="form-group">
+                        <InputText id="userAccount" class="form-control" @bind-Value="userSignUp.UserAccount" placeholder="계정" />
+                        <ValidationMessage For="@(() => userSignUp.UserAccount)" />
+                    </div>
+                    <div class="form-group">
+                        <InputText id="userPassword" type="password" class="form-control" @bind-Value="userSignUp.UserPassword" placeholder="비밀번호" />
+                        <ValidationMessage For="@(() => userSignUp.UserPassword)" />
+                    </div>
+                    <div class="form-group">
+                        <InputText id="userName" class="form-control" @bind-Value="userSignUp.UserName" placeholder="이름" />
+                        <ValidationMessage For="@(() => userSignUp.UserName)" />
+                    </div>
+                    <div class="form-group">
+                        <InputText id="userEmail" class="form-control" @bind-Value="userSignUp.UserEmail" placeholder="이메일" />
+                        <ValidationMessage For="@(() => userSignUp.UserEmail)" />
+                    </div>
+                    <div class="form-group">
+                        <input id="userPhone" class="form-control" @bind="FormattedPhoneNumber" @bind:event="oninput" placeholder="휴대폰 번호" />
+                        <ValidationMessage For="@(() => userSignUp.UserPhone)" />
+                    </div>
+                    @if (_isLoading)
+                    {
+                        <div class="loader"></div>
+                    }
+                    <button type="submit" class="btn btn-primary">
+                        @if (_isLoading)
+                        {
+                            <span>잠시만 기다려주세요.</span>
+                        }
+                        else
+                        {
+
+                            <span>가입하기</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        </fieldset>
+    </article>
+</div>
 
 @code {
     private UserSignUp userSignUp = new UserSignUp

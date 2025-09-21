@@ -1,0 +1,121 @@
+﻿@page "/login"
+@using Frontend.Models
+@using System.Net.Http.Headers
+@layout ContactLayout
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<article class="dark-theme-container">
+	<div class="login-container">
+		<header class="login-header">
+			<h1 class="title">로그인</h1>
+			<p class="desc">가입 정보를 입력해주세요.</p>
+		</header>
+		<fieldset disabled="@_isLoading">
+			<EditForm Model="loginModel" OnValidSubmit="HandleValidSubmit" autocomplate="off">
+				<div class="login-form">
+					<DataAnnotationsValidator />
+					<div class="form-group">
+						<InputText id="userAccount" class="form-control" @bind-Value="loginModel.UserAccount" placeholder="계정" />
+						<ValidationMessage For="@(() => loginModel.UserAccount)" />
+					</div>
+					<div class="form-group">
+						<InputText id="userPassword" type="password" class="form-control" @bind-Value="loginModel.UserPassword" placeholder="비밀번호" />
+						<ValidationMessage For="@(() => loginModel.UserPassword)" />
+					</div>
+					@if (_isLoading)
+					{
+						<div class="loader"></div>
+					}
+					<button type="submit" class="btn btn-primary">
+						@if (_isLoading)
+						{
+							<span>잠시만 기다려주세요.</span>
+						}
+						else
+						{
+							<span>로그인</span>
+						}
+					</button>
+				</div>
+			</EditForm>
+		</fieldset>
+		<ul class="help-container">
+			<li style="unicode-bidi: isolate">계정 찾기</li>
+			<li style="unicode-bidi: isolate">비밀번호 찾기</li>
+			<li style="unicode-bidi: isolate">
+				<a href="/signup">회원가입</a>
+			</li>
+		</ul>
+	</div>
+</article>
+
+
+@code {
+	private UserLogin loginModel = new UserLogin
+	{
+		UserAccount = string.Empty,
+		UserPassword = string.Empty
+	};
+
+	private bool _isLoading = false;
+	private string? _errorMessage;
+
+	private async Task HandleValidSubmit()
+	{
+		_isLoading = true;
+		_errorMessage = null;
+		try
+		{
+			await Task.Delay(1000);
+
+			var response = await Http.PostAsJsonAsync("api/auth/login", loginModel);
+			if (!response.IsSuccessStatusCode)
+			{
+				switch (response.StatusCode)
+				{
+					case System.Net.HttpStatusCode.BadRequest:
+						_errorMessage = "잘못된 요청입니다. 입력한 정보를 확인해주세요.";
+						break;
+					case System.Net.HttpStatusCode.Unauthorized:
+						_errorMessage = "계정 또는 비밀번호가 올바르지 않습니다.";
+						break;
+					case System.Net.HttpStatusCode.Forbidden:
+						_errorMessage = "접근이 거부되었습니다. 관리자에게 문의하세요.";
+						break;
+					case System.Net.HttpStatusCode.InternalServerError:
+						_errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+						break;
+					default:
+						_errorMessage = "로그인에 실패했습니다. 다시 시도해주세요.";
+						break;
+				}
+			}
+
+			var resData = await response.Content.ReadFromJsonAsync<AuthResponse>();
+			if (resData == null)
+			{
+				_errorMessage = "로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.";
+				return;
+			}
+
+			Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", resData.AccessToken);
+			await JSRuntime.InvokeVoidAsync("localStorage.setItem", "accessToken", resData.AccessToken);
+			await JSRuntime.InvokeVoidAsync("localStorage.setItem", "refreshToken", resData.RefreshToken);
+			await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userAccount", resData.UserAccount);
+			await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userName", resData.UserName);
+			await JSRuntime.InvokeVoidAsync("localStorage.setItem", "userEmail", resData.UserEmail);
+			Navigation.NavigateTo("/");
+		}
+		catch (Exception ex)
+		{
+			Console.WriteLine(ex.Message);
+			_errorMessage = "로그인 중 오류가 발생했습니다. 다시 시도해주세요.";
+		}
+		finally
+		{
+			_isLoading = false;
+		}
+	}
+}
